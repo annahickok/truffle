@@ -7,7 +7,7 @@ const expect = require("truffle-expect");
 const findContracts = require("truffle-contract-sources");
 const Config = require("truffle-config");
 const { run } = require("./run");
-const normalize = require("./normalize");
+const { normalizeOptions } = require("./legacy/options");
 
 // Most basic of the compile commands. Takes a hash of sources, where
 // the keys are file or module paths and the values are the bodies of
@@ -20,7 +20,7 @@ const normalize = require("./normalize");
 //   logger: console
 // }
 const compile = async function(sources, options) {
-  return await run(sources, normalize.options(options));
+  return await run(sources, normalizeOptions(options));
 };
 
 // contracts_directory: String. Directory where .sol files can be found.
