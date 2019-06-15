@@ -6,15 +6,16 @@ const defaultJSONQuery = {
 };
 
 const Blockchain = {
-  getBlockByNumber(blockNumber, provider, callback) {
-    defaultJSONQuery.params = [blockNumber, true];
-    defaultJSONQuery.method = "eth_getBlockByNumber";
-    provider.send(defaultJSONQuery, callback);
-  },
-
-  getBlockByHash(blockHash, provider, callback) {
-    defaultJSONQuery.params = [blockHash, true];
-    defaultJSONQuery.method = "eth_getBlockByHash";
+  getBlockBy(NumberOrHash, value, provider, callback) {
+    defaultJSONQuery.params = [value, true];
+    if (NumberOrHash === "Number")
+      defaultJSONQuery.method = "eth_getBlockByNumber";
+    else if (NumberOrHash === "Hash")
+      defaultJSONQuery.method = "eth_getBlockByHash";
+    else
+      throw new Error(
+        `.getBlockBy() only currently supports querying a "Number" or "Hash"!`
+      );
     provider.send(defaultJSONQuery, callback);
   },
 
@@ -35,11 +36,11 @@ const Blockchain = {
   asURI(provider, callback) {
     let genesis, latest;
 
-    this.getBlockByNumber("0x0", provider, (err, { result }) => {
+    this.getBlockBy("Number", "0x0", provider, (err, { result }) => {
       if (err) return callback(err);
       genesis = result;
 
-      this.getBlockByNumber("latest", provider, (err, { result }) => {
+      this.getBlockBy("Number", "latest", provider, (err, { result }) => {
         if (err) return callback(err);
         latest = result;
         const url = `blockchain://${genesis.hash.replace(
@@ -57,12 +58,12 @@ const Blockchain = {
     const expected_genesis = parsedUri.genesis_hash;
     const expected_block = parsedUri.block_hash;
 
-    this.getBlockByNumber("0x0", provider, (err, { result }) => {
+    this.getBlockBy("Number", "0x0", provider, (err, { result }) => {
       if (err) return callback(err);
       const block = result;
       if (block.hash !== expected_genesis) return callback(null, false);
 
-      this.getBlockByHash(expected_block, provider, (err, { result }) => {
+      this.getBlockBy("Hash", expected_block, provider, (err, { result }) => {
         // Treat an error as if the block didn't exist. This is because
         // some clients respond differently.
         const block = result;
